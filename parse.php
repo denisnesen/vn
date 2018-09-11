@@ -8,6 +8,36 @@ $log = fopen('/var/www/html/parse.log', 'w');
 
 $arr = array();
 
+/*
+
+читаем стартовый пакет из asteriska
+
+agi_request: /var/www/html/parse.php
+agi_channel: SIP/9221-00000010
+agi_language: en
+agi_type: SIP
+agi_uniqueid: 1536588367.32
+agi_version: 12.1.1
+agi_callerid: 89250400672
+agi_calleridname: +79250400672
+agi_callingpres: 0
+agi_callingani2: 0
+agi_callington: 0
+agi_callingtns: 0
+agi_dnid: 6666
+agi_rdnis: unknown
+agi_context: pegas
+agi_extension: 100
+agi_priority: 4
+agi_enhanced: 0.0
+agi_accountcode:
+agi_threadid: 139720583788288
+agi_arg_1: <?xml version=1.0 encoding=utf-8?><result><interpretation grammar=C:ProgramDataSpeech Technology CenterVoice Diggertemp9e7c98b9-4cff-4a5a-b3a6-8e9
+39f3bbcf2.slf confidence=69><input mode=speech confidence=69 timestamp-start=2018-09-10T06:05:49.720 timestamp-end=2018-09-10T06:05:57.830>кожевников николай
+</input><instance>3<SWI_meaning>3</SWI_meaning></instance></interpretation></result>
+
+*/
+
 while( !feof($std_in) && $temp = fgets($std_in) )
     {
     fputs($log, $temp);
@@ -29,6 +59,15 @@ fputs($log, print_r($arr, true));
 
 if(isset($arr['arg_1'])) {
 
+/*
+
+разбираем строку
+
+<?xml version=1.0 encoding=utf-8?><result><interpretation grammar=C:ProgramDataSpeech Technology CenterVoice Diggertemp9e7c98b9-4cff-4a5a-b3a6-8e9
+39f3bbcf2.slf confidence=69><input mode=speech confidence=69 timestamp-start=2018-09-10T06:05:49.720 timestamp-end=2018-09-10T06:05:57.830>кожевников николай
+</input><instance>3<SWI_meaning>3</SWI_meaning></instance></interpretation></result>
+
+*/
     if(preg_match("/confidence=([\d]+)/", $arr['arg_1'], $res) && sizeof($res) == 2) {
 
         fputs($log, print_r($res, true));
@@ -89,6 +128,8 @@ fclose($log);
 
 function get_info($id) {
 
+    # получаем данные из csv
+
     fputs($GLOBALS['log'], "Get_info: ".$id."\n");
 
     $ret = FALSE;
@@ -125,7 +166,11 @@ function get_info($id) {
 
 function sendrecvcmd($cmd) {
 
+    # отправляем комманду в ASTERISK
+
     sendcmd($cmd);
+
+    # ждем ответа от ASTERISK
 
     $ret = recvcmd();
 
